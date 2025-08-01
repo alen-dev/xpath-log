@@ -3,6 +3,7 @@
 namespace AlenDev\XpathLog\Http\Middleware;
 
 
+use AlenDev\XpathLog\XpathLog;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,10 @@ class RequestLogger
             'Timestamp' => $response->getDate(),
         ];
 
-        Log::channel(xpath_channel_name())->debug('HTTP Request Log', $log);
+        $xPathLog = new XpathLog();
+        $xPathLog
+            ->use(['log', 'json'])
+            ->log('info', 'message', $log);
 
         return $response;
     }

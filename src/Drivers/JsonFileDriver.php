@@ -11,7 +11,8 @@ class JsonFileDriver implements DriverInterface
 
     public function __construct()
     {
-        $this->file = config('xpath-log.json_file_path');
+        $fileName = config('xpath-log.file_name');
+        $this->file = storage_path("logs/{$fileName}.json");
     }
 
     public function handle(LogEntry $entry): void

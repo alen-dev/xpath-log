@@ -11,7 +11,8 @@ class LogFileDriver implements DriverInterface
 
     public function __construct()
     {
-        $this->file = config('xpath-log.log_file_path', storage_path('logs/telemetry.log'));
+        $fileName = config('xpath-log.file_name');
+        $this->file = storage_path("logs/{$fileName}.log");
     }
 
     public function handle(LogEntry $entry): void

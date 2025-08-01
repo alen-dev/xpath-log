@@ -3,6 +3,7 @@
 namespace AlenDev\XpathLog;
 
 use AlenDev\XpathLog\Commands\XpathLogCommand;
+use AlenDev\XpathLog\Commands\ViewLogCommand;
 use AlenDev\XpathLog\Http\Middleware\RequestLogger;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -17,7 +18,7 @@ class XpathLogServiceProvider extends PackageServiceProvider
             ->hasConfigFile('xpath-log')
             ->hasViews()
             ->hasMigration('create_xpath_log_table')
-            ->hasCommand(XpathLogCommand::class)
+            ->hasCommands(XpathLogCommand::class, ViewLogCommand::class)
         ;
 
 

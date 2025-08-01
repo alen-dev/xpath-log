@@ -10,6 +10,7 @@ class XpathLog
     protected array $driverMap;
     protected array $defaultDriverNames;
     protected array $activeDrivers = [];
+    protected array $transactions = [];
 
     public function __construct()
     {
@@ -47,6 +48,33 @@ class XpathLog
         foreach ($this->activeDrivers as $driver) {
             $driver->handle($entry);
         }
+    }
+
+    public function startTransaction(string $transactionId, array $attributes = []): void
+    {
+        $this->transactions[$transactionId] = [
+            'start' => now(),
+            'attributes' => $attributes,
+        ];
+
+        $this->log('info', 'Transaction started', array_merge(['transactionId' => $transactionId], $attributes));
+    }
+
+    public function endTransaction(string $transactionId, array $attributes = []): void
+    {
+        if (!isset($this->transactions[$transactionId])) {
+            throw new \InvalidArgumentException("Transaction [$transactionId] was not started.");
+        }
+
+        $start = $this->transactions[$transactionId]['start'];
+        $durationMs = now()->diffInMilliseconds($start);
+
+        $this->log('info', 'Transaction ended', array_merge([
+            'transactionId' => $transactionId,
+            'durationMs' => $durationMs,
+        ], $this->transactions[$transactionId]['attributes'], $attributes));
+
+        unset($this->transactions[$transactionId]);
     }
 
     public function transaction(string $transactionId, string $message, array $attributes = []): void

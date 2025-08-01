@@ -27,7 +27,7 @@ class XpathLogCommand extends Command
 
         $xPathLog = new XpathLog();
         $xPathLog
-            ->use('log')
+            ->use('json')
             ->log('warning', 'message', $log);
 
         $xPathLog
@@ -37,5 +37,12 @@ class XpathLogCommand extends Command
         $xPathLog
             ->use('json')
             ->transaction('abc-123', 'Transaction started', ['action' => 'checkout']);
+
+        $xPathLog
+            ->use('json')
+            ->startTransaction('TX-789', ['customerId' => 123]);
+        $xPathLog
+            ->use('json')
+            ->endTransaction('TX-789', ['status' => 'success']);
     }
 }

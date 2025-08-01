@@ -1,0 +1,102 @@
+<?php
+
+namespace AlenDev\XpathLog\Commands;
+
+use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
+
+class ViewLogCommand extends Command
+{
+    protected $signature = 'xpathlog:view
+                                {--level= : Filter by log level (e.g. error, info)}
+                                {--lines=10 : Number of recent lines to show}
+                                {--search= : Keyword to search in message or attributes}
+                                {--from= : Start date (e.g. 2025-07-01 or 2025-07-01T10:00)}
+                                {--to= : End date (e.g. 2025-07-31 or 2025-07-31T23:59)}';
+    protected $description = 'View the most recent XpathLog entries from the JSON log file';
+
+    /**
+     * Usage examples:
+     *      php artisan xpathlog:view --from="2025-07-01" --to="2025-07-31"
+     *      php artisan xpathlog:view --level=error --from="2025-08-01T00:00" --to="2025-08-01T10:00"
+     *      php artisan xpathlog:view --search=payment --from="yesterday"
+     *
+     * @return void
+     */
+    public function handle(): void
+    {
+        $fileName = config('xpath-log.file_name');
+        $file = storage_path("logs/{$fileName}.json");
+
+        $lines = [];
+
+        if (!file_exists($file)) {
+            $this->warn("Log file not found: $file");
+            return;
+        }
+
+        $rawLines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $rawLines = array_reverse($rawLines);
+
+        $filterLevel = strtolower($this->option('level') ?? '');
+        $keyword = strtolower($this->option('search') ?? '');
+        $from = $this->option('from') ? Carbon::parse($this->option('from')) : null;
+        $to = $this->option('to') ? Carbon::parse($this->option('to')) : null;
+
+        foreach ($rawLines as $line) {
+            $entry = json_decode($line, true);
+
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            // Timestamp filter
+            $timestamp = Carbon::parse($entry['timestamp'] ?? null);
+            if (!$timestamp) {
+                continue;
+            }
+
+            if ($from && $timestamp->lt($from)) {
+                continue;
+            }
+
+            if ($to && $timestamp->gt($to)) {
+                continue;
+            }
+
+            // Level filter
+            if ($filterLevel && strtolower($entry['level'] ?? '') !== $filterLevel) {
+                continue;
+            }
+
+            // Keyword filter
+            if ($keyword) {
+                $message = strtolower($entry['message'] ?? '');
+                $attributes = collect($entry['attributes'] ?? [])
+                    ->map(fn($v, $k) => "$k: $v")
+                    ->implode(', ');
+                $haystack = $message . ' ' . strtolower($attributes);
+
+                if (!str_contains($haystack, $keyword)) {
+                    continue;
+                }
+            }
+
+            $lines[] = [
+                'Time'       => $entry['timestamp'] ?? '-',
+                'Level'      => strtoupper($entry['level'] ?? 'UNKNOWN'),
+                'Message'    => $entry['message'] ?? '',
+                'Attributes' => collect($entry['attributes'] ?? [])->map(fn($v, $k) => "$k: $v")->implode(', '),
+            ];
+        }
+
+        if (empty($lines)) {
+            $this->info('No logs found for the specified criteria.');
+            return;
+        }
+
+        $this->table(['Time', 'Level', 'Message', 'Attributes'], $lines);
+
+    }
+}

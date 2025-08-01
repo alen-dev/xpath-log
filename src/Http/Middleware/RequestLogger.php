@@ -30,8 +30,7 @@ class RequestLogger
             'Timestamp' => $response->getDate(),
         ];
 
-//        Log::channel('custom')->info('there is your log', $log);
-        Log::channel(app('config')->get('channel'))->info('there is your log', $log);
+        Log::channel(xpath_channel_name())->debug('HTTP Request Log', $log);
 
         return $response;
     }

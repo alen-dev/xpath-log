@@ -17,8 +17,6 @@ class XpathLogServiceProvider extends PackageServiceProvider
         $package
             ->name('xpath-log')
             ->hasConfigFile('xpath-log')
-//            ->hasViews()
-//            ->hasMigration('create_xpath_log_table')
             ->hasCommands(
                 XpathLogCommand::class,
                 ViewLogCommand::class,

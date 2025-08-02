@@ -1,63 +1,116 @@
-# Simple Laravel Logger
-
+# XpathLog 📓
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/alen-dev/xpath-log.svg?style=flat-square)](https://packagist.org/packages/alen-dev/xpath-log)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/alen-dev/xpath-log/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/alen-dev/xpath-log/actions?query=workflow%3Arun-tests+branch%3Amain)
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/alen-dev/xpath-log/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/alen-dev/xpath-log/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/alen-dev/xpath-log.svg?style=flat-square)](https://packagist.org/packages/alen-dev/xpath-log)
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+A simple and extensible Laravel logging package for structured logging, transactions, and multiple output drivers — all with zero code changes when switching drivers.
 
-## Support us
+---
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/xpath-log.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/xpath-log)
+## 🚀 Features
 
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
+- 🔧 Multiple log levels (`debug`, `info`, `warning`, `error`)
+- 🏷 Tagged log entries with custom attributes
+- 📁 Supports multiple drivers:
+    - CLI (console output)
+    - JSON file logging (rotated daily)
+    - Simple text log file
+- 🔄 Transaction-based logging with start/end timestamps
+- 📆 Log viewer Artisan command with filters
+- ➕ Easily add custom drivers without modifying the core
+- 📦 Laravel-ready with automatic service provider & facade
 
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+---
 
-## Installation
-
-You can install the package via composer:
+## 📦 Installation
 
 ```bash
 composer require alen-dev/xpath-log
 ```
 
-You can publish and run the migrations with:
-
+## 🛠 Setup
+Step 1: Publish the config
 ```bash
-php artisan vendor:publish --tag="xpath-log-migrations"
-php artisan migrate
+php artisan vendor:publish --tag=xpath-log-config
 ```
-
-You can publish the config file with:
-
-```bash
-php artisan vendor:publish --tag="xpath-log-config"
-```
-
 This is the contents of the published config file:
 
 ```php
 return [
+    'driver_map' => [
+        'cli' => \AlenDev\XpathLog\Drivers\CliDriver::class,
+        'json' => \AlenDev\XpathLog\Drivers\JsonFileDriver::class,
+        'log'  => \AlenDev\XpathLog\Drivers\LogFileDriver::class,
+    ],
+    'external_driver_map' => [],
+    'default_drivers' => explode(',', env('XPATH_LOG_DEFAULT_DRIVERS', 'cli,log')),
+    'file_name' => env('XPATH_LOG_FILENAME', 'xpath'),
 ];
 ```
 
-Optionally, you can publish the views using
-
+Step 2: Optional ENV config
 ```bash
-php artisan vendor:publish --tag="xpath-log-views"
+XPATH_LOG_FILENAME=xpathlog
+```
+---
+## 🧪 Usage
+Basic Logging
+```bash
+$xPathLog = new XpathLog();
+$xPathLog
+    ->use('cli')
+    ->log('warning', 'message', ['test' => '34234']);
 ```
 
-## Usage
-
-```php
-$xpathLog = new AlenDev\XpathLog();
-echo $xpathLog->echoPhrase('Hello, AlenDev!');
+Transaction Logging
+```bash
+$xPathLog
+    ->use('json')
+    ->startTransaction('TX-789', ['customerId' => 123]);
+$xPathLog
+    ->use('json')
+    ->endTransaction('TX-789', ['status' => 'success']);
 ```
-
-## Testing
-
+Or log custom transaction messages:
+```bash
+$xPathLog
+    ->use('json')
+    ->transaction('abc-123', 'Applied discount', ['code' => 'SUMMER']);
+```
+---
+## 🖥 Artisan Log Viewer
+Optional: you can use some sample data for Artisan Log Viewer
+```bash
+xpathlog:create-sample
+```
+View the most recent XpathLog entries from your JSON log file
+```bash
+php artisan xpathlog:view
+```
+Filter logs
+```bash
+php artisan xpathlog:view --level=error
+php artisan xpathlog:view --search=payment
+php artisan xpathlog:view --date=2025-08-01
+php artisan xpathlog:view --from="2025-08-01" --to="2025-08-02"
+php artisan xpathlog:view --search=payment --from="yesterday"
+```
+## 🧩 Custom Drivers
+You can register custom drivers externally via config:
+```bash
+// config/xpath-log.php
+'driver_map' => [
+    'slack' => App\Logging\Drivers\SlackDriver::class,
+],
+```
+Each driver must implement:
+```bash
+interface DriverInterface {
+    public function handle(LogEntry $entry): void;
+}
+```
+## 🧪 Testing
 ```bash
 composer test
 ```
@@ -66,18 +119,9 @@ composer test
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
-## Contributing
-
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
-
-## Security Vulnerabilities
-
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
-
 ## Credits
 
 - [Alain Traxler](https://github.com/alen-dev)
-- [All Contributors](../../contributors)
 
 ## License
 

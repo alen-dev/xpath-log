@@ -2,27 +2,20 @@
 
 namespace AlenDev\XpathLog\Drivers;
 
-use AlenDev\XpathLog\Contracts\DriverInterface;
 use AlenDev\XpathLog\LogEntry;
 
-class LogFileDriver implements DriverInterface
+class LogFileDriver extends BaseFileDriver
 {
-    protected string $file;
-
-    public function __construct()
-    {
-        $fileName = config('xpath-log.file_name');
-        $this->file = storage_path("logs/{$fileName}.log");
-    }
-
     public function handle(LogEntry $entry): void
     {
+        $filePath = $this->getDatedFilePath('log');
+
         $line = "[{$entry->timestamp}] {$entry->level}: {$entry->message}";
 
         if (!empty($entry->attributes)) {
             $line .= ' | ' . json_encode($entry->attributes);
         }
 
-        file_put_contents($this->file, $line . PHP_EOL, FILE_APPEND);
+        file_put_contents($filePath, $line . PHP_EOL, FILE_APPEND);
     }
 }

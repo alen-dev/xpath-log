@@ -27,12 +27,12 @@ class XpathLogCommand extends Command
 
         $xPathLog = new XpathLog();
         $xPathLog
-            ->use('json')
+            ->use('log')
             ->log('warning', 'message', $log);
 
         $xPathLog
             ->use('cli')
-            ->log('warning', 'message', $log);
+            ->log('warning', 'message', ['test' => '34234']);
 
         $xPathLog
             ->use('json')

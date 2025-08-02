@@ -2,22 +2,15 @@
 
 namespace AlenDev\XpathLog\Drivers;
 
-use AlenDev\XpathLog\Contracts\DriverInterface;
 use AlenDev\XpathLog\LogEntry;
 
-class JsonFileDriver implements DriverInterface
+class JsonFileDriver extends BaseFileDriver
 {
-    protected string $file;
-
-    public function __construct()
-    {
-        $fileName = config('xpath-log.file_name');
-        $this->file = storage_path("logs/{$fileName}.json");
-    }
-
     public function handle(LogEntry $entry): void
     {
-        file_put_contents($this->file, json_encode([
+        $filePath = $this->getDatedFilePath('json');
+
+        file_put_contents($filePath, json_encode([
                 'timestamp'  => $entry->timestamp,
                 'level'      => $entry->level,
                 'message'    => $entry->message,

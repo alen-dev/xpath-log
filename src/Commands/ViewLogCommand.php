@@ -4,16 +4,17 @@ namespace AlenDev\XpathLog\Commands;
 
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 
 class ViewLogCommand extends Command
 {
     protected $signature = 'xpathlog:view
+                                {--date= : Date of the log file to read (e.g. 2025-08-01)}
                                 {--level= : Filter by log level (e.g. error, info)}
                                 {--lines=10 : Number of recent lines to show}
                                 {--search= : Keyword to search in message or attributes}
                                 {--from= : Start date (e.g. 2025-07-01 or 2025-07-01T10:00)}
-                                {--to= : End date (e.g. 2025-07-31 or 2025-07-31T23:59)}';
+                                {--to= : End date (e.g. 2025-07-31 or 2025-07-31T23:59)}
+                                ';
     protected $description = 'View the most recent XpathLog entries from the JSON log file';
 
     /**
@@ -27,22 +28,54 @@ class ViewLogCommand extends Command
     public function handle(): void
     {
         $fileName = config('xpath-log.file_name');
-        $file = storage_path("logs/{$fileName}.json");
+        $date = $this->option('date') ?? now()->format('Y-m-d');
+        $file = storage_path("logs/{$fileName}-{$date}.json");
 
-        $lines = [];
+        $filtersUsed = $this->option('level') || $this->option('search') || $this->option('from') || $this->option('to') || $this->option('date');
 
         if (!file_exists($file)) {
-            $this->warn("Log file not found: $file");
-            return;
+            $pattern = storage_path("logs/{$fileName}-*.json");
+            $files = glob($pattern);
+
+            if (empty($files)) {
+                $this->warn("No log files found in: " . storage_path('logs'));
+                return;
+            }
+
+            $this->warn("Log file not found for ({$date}). Please select from available log files:");
+
+            $choices = collect($files)->map(fn($f) => basename($f))->sort()->values()->all();
+            $chosen = $this->choice('Select a log file to view', $choices);
+
+            $file = storage_path('logs/' . $chosen);
+
+//            if (!$filtersUsed) {
+//                $this->warn("Log file not found for today ({$date}). Please select from available log files:");
+//
+//                $choices = collect($files)->map(fn($f) => basename($f))->sort()->values()->all();
+//                $chosen = $this->choice('Select a log file to view', $choices);
+//
+//                $file = storage_path('logs/' . $chosen);
+//            } else {
+//                $this->warn("Log file not found: $file");
+//                return;
+//            }
+        } else {
+            if (!$filtersUsed) {
+                $this->info('Showing log file: ' . basename($file));
+            }
         }
 
         $rawLines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         $rawLines = array_reverse($rawLines);
+        $rawLines = array_slice($rawLines, 0, $this->option('lines') ?? 10);
 
         $filterLevel = strtolower($this->option('level') ?? '');
         $keyword = strtolower($this->option('search') ?? '');
         $from = $this->option('from') ? Carbon::parse($this->option('from')) : null;
         $to = $this->option('to') ? Carbon::parse($this->option('to')) : null;
+
+        $lines = [];
 
         foreach ($rawLines as $line) {
             $entry = json_decode($line, true);
@@ -97,6 +130,5 @@ class ViewLogCommand extends Command
         }
 
         $this->table(['Time', 'Level', 'Message', 'Attributes'], $lines);
-
     }
 }

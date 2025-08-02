@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\Auth;
 
 class XpathLogCommand extends Command
 {
-    public $signature = 'xpath-log';
+    public $signature = 'xpathlog:create-sample';
 
-    public $description = 'My command';
+    public $description = 'Creates some dummy log entries in order to have some data to display';
 
     public function handle(Request $request): void
     {
-        $this->comment('Hello xpath!');
+        $this->comment('Hello Xpath!');
 
         $log = [
             'User' => ($user = Auth::user()) ? $user->name : 'Not logged in',
@@ -44,5 +44,7 @@ class XpathLogCommand extends Command
         $xPathLog
             ->use('json')
             ->endTransaction('TX-789', ['status' => 'success']);
+
+        $this->comment('Dummy data created! You can check the log entries with "php artisan xpathlog:view"');
     }
 }

@@ -31,5 +31,14 @@ class XpathLogServiceProvider extends PackageServiceProvider
 //        $kernel->prependMiddlewareToGroup('web', RequestLogger::class);
     }
 
+    public function bootingPackage(): void
+    {
+        // Merge external_driver_map into driver_map
+        $driverMap = config('xpath-log.driver_map', []);
+        $externalMap = config('xpath-log.external_driver_map', []);
+
+        config()->set('xpath-log.driver_map', array_merge($driverMap, $externalMap));
+    }
+
 }
 

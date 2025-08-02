@@ -48,18 +48,6 @@ class ViewLogCommand extends Command
             $chosen = $this->choice('Select a log file to view', $choices);
 
             $file = storage_path('logs/' . $chosen);
-
-//            if (!$filtersUsed) {
-//                $this->warn("Log file not found for today ({$date}). Please select from available log files:");
-//
-//                $choices = collect($files)->map(fn($f) => basename($f))->sort()->values()->all();
-//                $chosen = $this->choice('Select a log file to view', $choices);
-//
-//                $file = storage_path('logs/' . $chosen);
-//            } else {
-//                $this->warn("Log file not found: $file");
-//                return;
-//            }
         } else {
             if (!$filtersUsed) {
                 $this->info('Showing log file: ' . basename($file));

@@ -82,7 +82,7 @@ $xPathLog
 ```
 ---
 ## 🖥 Artisan Log Viewer
-Optional: you can use some sample data for Artisan Log Viewer
+Optional: you can add some sample data for Artisan Log Viewer. The log viewer is designed to view JSON log created by this package.
 ```bash
 php artisan xpathlog:create-sample
 ```

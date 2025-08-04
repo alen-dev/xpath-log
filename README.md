@@ -51,6 +51,7 @@ return [
 
 Step 2: Optional ENV config
 ```bash
+XPATH_LOG_DEFAULT_DRIVERS="cli,log"
 XPATH_LOG_FILENAME=xpathlog
 ```
 ---
@@ -110,6 +111,17 @@ interface DriverInterface {
     public function handle(LogEntry $entry): void;
 }
 ```
+
+## 🧩 Request Logger
+This feature is disabled by default. To enable just add the following variable to your .env file:
+```bash
+XPATH_LOG_ENABLE_REQUEST_LOGGER=true
+```
+If enabled, by default, this will log every request on your web middleware but you can change this by adding the following line to your .env file:
+```bash
+XPATH_LOG_MIDDLEWARE_GROUP=api
+```
+
 ## 🧪 Testing
 ```bash
 composer test

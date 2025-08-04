@@ -11,7 +11,11 @@ return [
         // 'slack' => \App\Logging\Drivers\SlackDriver::class, // added externally
     ],
 
-    'default_drivers' => explode(',', env('XPATH_LOG_DEFAULT_DRIVERS', 'cli,log')),
+    'default_drivers' => explode(',', env('XPATH_LOG_DEFAULT_DRIVERS', 'log')),
 
     'file_name' => env('XPATH_LOG_FILENAME', 'xpath'),
+
+    'enable_request_logger' => env('XPATH_LOG_ENABLE_REQUEST_LOGGER', false),
+
+    'middleware_group' => env('XPATH_LOG_MIDDLEWARE_GROUP', 'web'),
 ];

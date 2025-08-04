@@ -2,7 +2,7 @@
 
 namespace AlenDev\XpathLog\Http\Middleware;
 
-
+use Illuminate\Support\Facades\App;
 use AlenDev\XpathLog\XpathLog;
 use Closure;
 use Illuminate\Http\Request;
@@ -13,9 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
 class RequestLogger
 {
     /**
-     * Handle an incoming request.
+     * @param Request $request
+     * @param Closure $next
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @return Response
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -31,9 +32,14 @@ class RequestLogger
             'Timestamp' => $response->getDate(),
         ];
 
-        $xPathLog = new XpathLog();
+        $drivers = config('xpath-log.default_drivers');
+
+//        $xPathLog = new XpathLog();
+
+        $xPathLog = App::make(XpathLog::class); // resolve from container instead of new
+
         $xPathLog
-            ->use(['log', 'json'])
+            ->use($drivers)
             ->log('info', 'message', $log);
 
         return $response;

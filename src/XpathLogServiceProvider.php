@@ -24,13 +24,7 @@ class XpathLogServiceProvider extends PackageServiceProvider
             );
 
 
-        /**
-         * Spatie package tools doesn't support Middlewares, so we add it to Kernel
-         * https://github.com/spatie/laravel-package-tools/discussions/6
-         */
 
-//        $kernel = app(\Illuminate\Contracts\Http\Kernel::class);
-//        $kernel->prependMiddlewareToGroup('web', RequestLogger::class);
     }
 
     public function bootingPackage(): void
@@ -38,8 +32,19 @@ class XpathLogServiceProvider extends PackageServiceProvider
         // Merge external_driver_map into driver_map
         $driverMap = config('xpath-log.driver_map', []);
         $externalMap = config('xpath-log.external_driver_map', []);
-
         config()->set('xpath-log.driver_map', array_merge($driverMap, $externalMap));
+
+        /**
+         * Conditionally add middleware
+         *
+         * Spatie package tools doesn't support Middlewares, so we add it to Kernel
+         * https://github.com/spatie/laravel-package-tools/discussions/6
+         */
+        if (config('xpath-log.enable_request_logger', false)) {
+            $kernel = app(\Illuminate\Contracts\Http\Kernel::class);
+            $group = config('xpath-log.middleware_group', 'web');
+            $kernel->prependMiddlewareToGroup($group, RequestLogger::class);
+        }
     }
 
 }

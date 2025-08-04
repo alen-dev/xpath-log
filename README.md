@@ -84,9 +84,9 @@ $xPathLog
 ## 🖥 Artisan Log Viewer
 Optional: you can use some sample data for Artisan Log Viewer
 ```bash
-xpathlog:create-sample
+php artisan xpathlog:create-sample
 ```
-View the most recent XpathLog entries from your JSON log file
+View the most recent XpathLog entries from your JSON log file (other file formats coming soon)
 ```bash
 php artisan xpathlog:view
 ```
